@@ -64,6 +64,47 @@ def age_based_greeting(name: str, age: int) -> None:
     print(f"Hello, {name}!")
 ```
 
+### コマンドラインからの実行
+
+EvolveChipはコマンドラインツールとしても使用できます。インストール後、以下のコマンドで実行できます：
+
+```bash
+# インストール
+pip install -e .
+
+# 基本的な使用方法
+evolve-chip hello_world.py
+
+# 特定の関数を指定して実行
+evolve-chip hello_world.py --function say_hello
+
+# 指示付きで実行
+evolve-chip hello_world.py --function greet_world --instructions "このコードを中国語対応にしてください"
+
+# 複数の進化目標を指定
+evolve-chip hello_world.py --function say_hello --goals READABILITY PERFORMANCE SECURITY
+
+# AIチップを無効化（本番モード）で実行
+evolve-chip hello_world.py --production
+
+# デコレータ付き関数の一覧表示
+evolve-chip hello_world.py --list
+
+# 引数を渡して関数を実行
+evolve-chip hello_world.py --function say_hello --args "Alice"
+```
+
+コマンドラインオプション：
+
+| オプション | 短縮形 | 説明 |
+|------------|--------|------|
+| `--function` | `-f` | 特定の関数のみを進化させる場合に指定 |
+| `--goals` | `-g` | 進化の目標（READABILITY, PERFORMANCE, SECURITY, MAINTAINABILITY） |
+| `--instructions` | `-i` | AIに与える自然言語指示 |
+| `--production` | `-p` | 本番モードで実行（AIチップを無効化） |
+| `--list` | `-l` | 対象ファイル内のevolveデコレータ付き関数を一覧表示 |
+| `--args` | `-a` | 関数に渡す引数（スペース区切り） |
+
 ## 設定
 
 `.env`ファイルを作成し、以下の環境変数を設定します：
@@ -138,6 +179,137 @@ EvolveChip suggestions for age_based_greeting:
         print(f"ご機嫌いかがですか、{name}様。")
     else:
         print(f"こんにちは、{name}さん！")
+```
+
+## 大規模アプリケーション開発での活用
+
+EvolveChipは単一関数だけでなく、大規模なアプリケーション開発においても強力なツールとなります。
+
+### マイクロサービスアーキテクチャ
+
+複数のマイクロサービスで構成されるシステムで、各サービスごとに異なる進化目標を設定できます：
+
+```python
+# ユーザー認証サービス
+@evolve(
+    goals=[EvolutionGoal.SECURITY, EvolutionGoal.PERFORMANCE],
+    ai_engine=ai_engine,
+    instructions="OAuthプロトコルに対応させ、セキュリティを強化してください"
+)
+def authenticate_user(credentials):
+    # 認証ロジック
+    pass
+
+# データ処理サービス
+@evolve(
+    goals=[EvolutionGoal.PERFORMANCE, EvolutionGoal.MAINTAINABILITY],
+    ai_engine=ai_engine,
+    instructions="大量データ処理を最適化し、メモリ使用量を削減してください"
+)
+def process_data(data_batch):
+    # データ処理ロジック
+    pass
+```
+
+### ウェブアプリケーション
+
+FlaskやDjango等のウェブフレームワークと組み合わせて、エンドポイントやビジネスロジックを進化させることができます：
+
+```python
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+
+@app.route('/api/users', methods=['GET'])
+@evolve(
+    goals=[EvolutionGoal.PERFORMANCE, EvolutionGoal.MAINTAINABILITY],
+    ai_engine=ai_engine,
+    instructions="ページネーション機能を追加し、大量ユーザーデータに対応してください"
+)
+def get_users():
+    # ユーザー一覧取得ロジック
+    return jsonify(users)
+
+@app.route('/api/process', methods=['POST'])
+@evolve(
+    goals=[EvolutionGoal.SECURITY],
+    ai_engine=ai_engine,
+    instructions="入力データのバリデーションを強化し、SQLインジェクション対策を実装してください"
+)
+def process_data():
+    data = request.json
+    # データ処理ロジック
+    return jsonify(result)
+```
+
+### 機械学習パイプライン
+
+データ前処理、モデルトレーニング、予測といった機械学習パイプラインの各段階に適用できます：
+
+```python
+@evolve(
+    goals=[EvolutionGoal.PERFORMANCE],
+    ai_engine=ai_engine,
+    instructions="並列処理を導入し、大規模データセットでの前処理を高速化してください"
+)
+def preprocess_data(dataset):
+    # データ前処理ロジック
+    return processed_data
+
+@evolve(
+    goals=[EvolutionGoal.PERFORMANCE, EvolutionGoal.MAINTAINABILITY],
+    ai_engine=ai_engine,
+    instructions="モデルのハイパーパラメータ調整を自動化し、精度を向上させてください"
+)
+def train_model(training_data):
+    # モデルトレーニングロジック
+    return model
+```
+
+### 大規模プロジェクトでのメリット
+
+1. **統一的なコード品質**: プロジェクト全体で一貫した品質基準を適用
+2. **継続的な改善**: 新機能開発と並行して既存コードも自動的に改善
+3. **チーム全体の効率化**: 全開発者がAIのサポートを受けられる
+4. **特定領域の専門知識補完**: セキュリティやパフォーマンスなど専門知識が必要な領域をAIがサポート
+5. **自己文書化**: 提案内容が実質的なコードドキュメントとして機能
+
+### スケーラビリティ
+
+EvolveChipは数百から数千の関数を持つ大規模プロジェクトでも効率的に動作します。AIリクエストは必要な時だけ行われ、キャッシュやレート制限の仕組みにより、API使用量も最適化されます。
+
+### 実装例: 大規模ECサイト
+
+```python
+# 製品検索エンジン
+@evolve(
+    goals=[EvolutionGoal.PERFORMANCE],
+    ai_engine=ai_engine,
+    instructions="検索アルゴリズムをベクトル検索ベースに改良し、関連性スコアリングを改善してください"
+)
+def search_products(query, filters=None):
+    # 検索ロジック
+    pass
+
+# 推奨エンジン
+@evolve(
+    goals=[EvolutionGoal.MAINTAINABILITY, EvolutionGoal.PERFORMANCE],
+    ai_engine=ai_engine,
+    instructions="協調フィルタリングと内容ベースのハイブリッド推奨システムに進化させてください"
+)
+def recommend_products(user_id, current_product=None):
+    # 推奨ロジック
+    pass
+
+# 決済処理
+@evolve(
+    goals=[EvolutionGoal.SECURITY],
+    ai_engine=ai_engine,
+    instructions="PCI DSS準拠の決済処理に改良し、不正検出機能を追加してください"
+)
+def process_payment(order_id, payment_details):
+    # 決済ロジック
+    pass
 ```
 
 ## 貢献
