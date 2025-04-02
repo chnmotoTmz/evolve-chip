@@ -25,7 +25,8 @@ class EvolveChip:
         func: Any,
         goals: Optional[List[str]] = None,
         constraints: Optional[List[str]] = None,
-        ai_engine: Optional[Any] = None
+        ai_engine: Optional[Any] = None,
+        instructions: Optional[str] = None
     ):
         self.func = func
         self.goals = [EvolutionGoal(goal) for goal in (goals or ["readability", "performance"])]
@@ -33,6 +34,7 @@ class EvolveChip:
         self.original_source = inspect.getsource(func)
         self.func_name = func.__name__
         self.ai_engine = ai_engine
+        self.instructions = instructions
         self.suggestions: List[EvolutionSuggestion] = []
         self.dev_mode = os.environ.get("EVOLVE_MODE") == "development"
         
@@ -46,15 +48,39 @@ class EvolveChip:
     def _analyze(self) -> None:
         """コードを解析し、進化の提案を生成"""
         if self.ai_engine:
-            self.suggestions = self.ai_engine.analyze(
-                self.original_source,
-                self.goals,
-                self.constraints
-            )
+            # AIエンジンを使用した分析
+            if self.instructions:
+                # 指示がある場合は指示に基づく分析を実行
+                self._analyze_with_instructions()
+            else:
+                # 通常の品質分析を実行
+                self.suggestions = self.ai_engine.analyze(
+                    self.original_source,
+                    self.goals,
+                    self.constraints
+                )
         else:
             self._default_analysis()
         
         self._display_suggestions()
+    
+    def _analyze_with_instructions(self) -> None:
+        """指示に基づいてコードを分析・変更する"""
+        if not self.ai_engine:
+            return
+        
+        try:
+            # 指示に基づくコード変更の提案を生成
+            self.suggestions = self.ai_engine.analyze_with_instructions(
+                self.original_source,
+                self.instructions,
+                self.goals,
+                self.constraints
+            )
+            print(f"\n指示「{self.instructions}」に基づく分析を実行しました\n")
+        except Exception as e:
+            print(f"指示の処理中にエラーが発生しました: {e}")
+            self._default_analysis()
 
     def _default_analysis(self) -> None:
         """デフォルトの分析ロジック"""
