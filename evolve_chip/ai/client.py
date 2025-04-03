@@ -63,26 +63,24 @@ class AIClient:
         constraints: Optional[List[str]] = None
     ) -> AIResponse:
         api_key = self.key_rotator.get_next_key()
-        
         if not api_key:
-            logger.warning("No Gemini API key found. Falling back to local analysis.")
-            return self._local_analysis(code, goals, constraints)
+            logger.error("No Gemini API key found.")
+            raise Exception("Gemini API key not available.")
         
         try:
             prompt = self._build_prompt(code, goals, constraints)
             raw_response = self._call_gemini_api(prompt, api_key)
             suggestions = self._parse_response(raw_response, code)
             
-            # 提案が得られなかった場合はローカル分析にフォールバック
             if not suggestions:
-                logger.warning("No suggestions from Gemini API. Falling back to local analysis.")
-                return self._local_analysis(code, goals, constraints)
+                logger.error("No suggestions from Gemini API.")
+                raise Exception("No suggestions from Gemini API.")
                 
             return AIResponse(suggestions=suggestions, raw_response=raw_response)
         except Exception as e:
             logger.error(f"Error calling Gemini API: {str(e)}")
-            return self._local_analysis(code, goals, constraints)
-    
+            raise
+
     def execute_instructions(
         self,
         code: str,
@@ -92,25 +90,23 @@ class AIClient:
     ) -> AIResponse:
         """指示に基づいてコードを分析・変更する"""
         api_key = self.key_rotator.get_next_key()
-        
         if not api_key:
-            logger.warning("No Gemini API key found. Falling back to local analysis.")
-            return self._local_instruction_execution(code, instructions, goals, constraints)
+            logger.error("No Gemini API key found.")
+            raise Exception("Gemini API key not available.")
         
         try:
             prompt = self._build_instruction_prompt(code, instructions, goals, constraints)
             raw_response = self._call_gemini_api(prompt, api_key)
             suggestions = self._parse_instruction_response(raw_response, code, instructions)
             
-            # 提案が得られなかった場合はローカル分析にフォールバック
             if not suggestions:
-                logger.warning("No suggestions from Gemini API. Falling back to local analysis.")
-                return self._local_instruction_execution(code, instructions, goals, constraints)
+                logger.error("No suggestions from Gemini API for instructions.")
+                raise Exception("No suggestions from Gemini API for instructions.")
                 
             return AIResponse(suggestions=suggestions, raw_response=raw_response)
         except Exception as e:
             logger.error(f"Error calling Gemini API for instructions: {str(e)}")
-            return self._local_instruction_execution(code, instructions, goals, constraints)
+            raise
     
     def _build_prompt(
         self,
@@ -175,13 +171,12 @@ class AIClient:
             json_end = text.rfind("]") + 1
             
             if json_start == -1 or json_end == 0:
-                logger.warning("No JSON found in Gemini API response")
+                logger.error("No JSON found in Gemini API response")
                 return []
                 
             json_text = text[json_start:json_end]
             suggestions_data = json.loads(json_text)
             
-            # EvolutionSuggestionオブジェクトに変換
             suggestions = []
             for item in suggestions_data:
                 suggestions.append(
@@ -194,47 +189,12 @@ class AIClient:
                     )
                 )
             
-            # 優先度でソート
             suggestions.sort(key=lambda x: x.priority)
             return suggestions
         except Exception as e:
             logger.error(f"Error parsing Gemini API response: {str(e)}")
             return []
     
-    def _local_analysis(
-        self,
-        code: str,
-        goals: List[EvolutionGoal],
-        constraints: Optional[List[str]] = None
-    ) -> AIResponse:
-        """フォールバック用のローカル分析"""
-        suggestions = []
-        
-        if "print(" in code:
-            suggestions.append(
-                EvolutionSuggestion(
-                    title="ロギング改善",
-                    description="print文をloggingに置き換えることを推奨します",
-                    priority=1,
-                    impact="high",
-                    code_sample="import logging\nlogging.info('message')"
-                )
-            )
-        
-        if "def " in code and "->" not in code:
-            suggestions.append(
-                EvolutionSuggestion(
-                    title="型ヒント追加",
-                    description="関数に戻り値の型ヒントを追加することを推奨します",
-                    priority=2,
-                    impact="medium",
-                    code_sample="def function() -> str:"
-                )
-            )
-        
-        suggestions.sort(key=lambda x: x.priority)
-        return AIResponse(suggestions=suggestions)
-
     def _build_instruction_prompt(
         self,
         code: str,
@@ -281,7 +241,6 @@ class AIClient:
         original_code: str,
         instructions: str
     ) -> List[EvolutionSuggestion]:
-        """指示のレスポンスを解析する"""
         try:
             # レスポンスからテキスト部分を抽出
             text = response.get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "")
@@ -291,13 +250,12 @@ class AIClient:
             json_end = text.rfind("]") + 1
             
             if json_start == -1 or json_end == 0:
-                logger.warning("No JSON found in Gemini API response")
+                logger.error("No JSON found in Gemini API response")
                 return []
                 
             json_text = text[json_start:json_end]
             suggestions_data = json.loads(json_text)
             
-            # EvolutionSuggestionオブジェクトに変換
             suggestions = []
             for item in suggestions_data:
                 suggestions.append(
@@ -310,58 +268,12 @@ class AIClient:
                     )
                 )
             
-            # 優先度でソート
             suggestions.sort(key=lambda x: x.priority)
             return suggestions
         except Exception as e:
             logger.error(f"Error parsing Gemini API response for instructions: {str(e)}")
             return []
     
-    def _local_instruction_execution(
-        self,
-        code: str,
-        instructions: str,
-        goals: List[EvolutionGoal],
-        constraints: Optional[List[str]] = None
-    ) -> AIResponse:
-        """指示のローカル処理（フォールバック）"""
-        suggestions = []
-        
-        # 非常に基本的なパターンマッチング
-        if "Hello" in code and "中国語" in instructions:
-            suggestions.append(
-                EvolutionSuggestion(
-                    title="中国語対応",
-                    description="挨拶を中国語に変更",
-                    code_sample=code.replace('print(f"Hello, {name}!")', 'print(f"你好, {name}!")'),
-                    priority=1,
-                    impact="high"
-                )
-            )
-        elif "Hello" in code and "Everybody" in instructions:
-            suggestions.append(
-                EvolutionSuggestion(
-                    title="メッセージ変更",
-                    description="Hello, World から Hello, Everybody に変更",
-                    code_sample=code.replace('World', 'Everybody'),
-                    priority=1,
-                    impact="medium"
-                )
-            )
-        else:
-            # 汎用的な返答
-            suggestions.append(
-                EvolutionSuggestion(
-                    title="指示に基づく変更",
-                    description=f"指示「{instructions}」に基づく変更",
-                    code_sample=f"# 指示: {instructions}\n{code}",
-                    priority=1,
-                    impact="medium"
-                )
-            )
-        
-        return AIResponse(suggestions=suggestions)
-
 # シングルトンインスタンス
 _ai_client = None
 
@@ -370,4 +282,7 @@ def get_ai_client() -> AIClient:
     global _ai_client
     if _ai_client is None:
         _ai_client = AIClient()
-    return _ai_client 
+    return _ai_client
+
+
+
