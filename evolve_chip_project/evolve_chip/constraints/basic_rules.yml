@@ -1,0 +1,5 @@
+# evolve_chip/constraints/basic_rules.yml
+# 将来の拡張用（現時点では未使用）
+output: "Hello World"
+memory: "< 1MB"
+runtime: "< 0.1s" 

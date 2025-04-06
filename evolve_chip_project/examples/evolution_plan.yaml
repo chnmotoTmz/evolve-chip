@@ -1,0 +1,44 @@
+version: '1.0'
+project_settings:
+  default_goals:
+  - READABILITY
+  - MAINTAINABILITY
+  default_constraints:
+  - preserve_semantics
+evolution_tasks:
+- id: improve_fibonacci_func
+  description: フィボナッチ関数の最適化が必要です
+  target:
+    file: ea_sample.py
+    function: calculate_fibonacci
+  goals:
+  - PERFORMANCE
+  - READABILITY
+  instructions: 再帰を避け、メモ化または反復的なアプローチを使用して関数を最適化してください。また、大きな入力値の場合のエラー処理を追加してください。
+  priority: 1
+  enabled: true
+  status: pending
+
+- id: enhance_age_greeting
+  description: 年齢ベースの挨拶をより豊かにする
+  target:
+    file: ea_sample.py
+    function: age_based_greeting
+  goals:
+  - READABILITY
+  - FUNCTIONALITY
+  instructions: 年齢の範囲をより細かく分けて（幼児、子供、ティーン、若者、大人、シニア）、それぞれに適した挨拶を返すように改善してください。
+  priority: 2
+  enabled: true
+  status: pending
+
+- id: add_docstrings
+  description: ドキュメント文字列の強化
+  target:
+    file: ea_sample.py
+  goals:
+  - DOCUMENTATION
+  instructions: すべての関数に完全なドキュメント文字列（引数、戻り値、例外、使用例）を追加してください。
+  priority: 3
+  enabled: true
+  status: pending 
