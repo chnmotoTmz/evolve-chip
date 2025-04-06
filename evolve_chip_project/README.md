@@ -257,6 +257,56 @@ EvolveChipはオープンソースプロジェクトとして、コミュニテ�
 2. **プルリクエスト**: 新機能の追加や既存機能の改善
 3. **ドキュメント**: ドキュメントの改善や翻訳
 
+## 研究リファレンス
+
+EvolveChipは、以下の研究成果に基づいて開発されています：
+
+### AI駆動コード最適化研究
+
+最近のAI技術の進歩により、レガシーコードの最適化と改善のためのツールが急速に発展しています。主な研究分野：
+
+1. **コードスメル検出**
+   - 不適切なパターンの自動検出
+   - パフォーマンス最適化のための深層学習モデル
+   - インテリジェントなコードレビューシステム
+
+2. **YAMLベースの構成生成**
+   - 自然言語からYAMLコードを生成
+   - ドメイン固有の評価指標の開発
+   - ITインフラストラクチャの自動構成
+
+3. **自動プログラム修復（APR）**
+   - パターンベースのパッチング
+   - 動的解析によるバグ検出
+   - 検索ベースのAPR
+   - 進化的アルゴリズムによる最適化
+
+### 最新の技術動向
+
+EvolveChipに関連する最新の技術動向：
+
+1. **事前訓練モデル**
+   - 大規模コードデータセットでの事前訓練
+   - ドメイン固有タスクへの転移学習
+   - 自己教師あり学習手法
+
+2. **説明可能なAI**
+   - 透明性の高い推論プロセス
+   - デベロッパーフレンドリーな説明
+   - インタラクティブなデバッグ支援
+
+3. **マルチモーダルアプローチ**
+   - コード、コメント、ドキュメントの統合分析
+   - コンテキストを考慮した最適化
+   - 複数のデータソースからの学習
+
+### 参考文献
+
+1. Podduturi, S. (2025). "AI-Driven Code Optimization: Leveraging ML to Refactor Legacy Codebases". North American Journal of Engineering Research.
+2. Pujar, S. et al. (2023). "Automated Code generation for Information Technology Tasks in YAML through Large Language Models".
+3. Anand, A. et al. (2024). "A Comprehensive Survey of AI-Driven Advancements and Techniques in Automated Program Repair and Code Generation".
+4. AlShriaf, A. et al. (2024). "Automated Configuration Synthesis for Machine Learning Models: A git-Based Requirement and Architecture Management System".
+
 ## ライセンス
 
 MITライセンスの下で公開されています。
